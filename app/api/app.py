@@ -3,49 +3,54 @@ from flask import Flask, jsonify, request, render_template
 from dotenv import load_dotenv # Used to load .env file
 from google import genai
 from google.genai import types
-
+from pydantic import BaseModel
 import base64
 
-
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'} 
+class Food(BaseModel):
+    food_name: str
+    shelf_life: int
 
 # Load the environment variables from the .env file
 load_dotenv()
 
 api_key = os.getenv("GEMINI_API_KEY")
 
-# Create a Flask application instance
+# --- Configuration ---
+# NOTE: The API key for Gemini must be set as an environment variable (GEMINI_API_KEY)
+# or initialized directly. For canvas, we assume the environment handles this.
+# Initialize Gemini Client
+try:
+    # If the environment provides the API key, the client will pick it up automatically.
+    # Otherwise, you can explicitly pass it: client = genai.Client(api_key="YOUR_API_KEY")
+    client = genai.Client()
+except Exception as e:
+    print(f"Warning: Could not initialize Gemini Client automatically. Ensure GEMINI_API_KEY is set. Error: {e}")
+    client = None
+
+# Initialize Flask App
 app = Flask(__name__)
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'} 
 
+def allowed_file(extension):
+    """Checks if a file extension is allowed."""
+    return extension.lower() in ALLOWED_EXTENSIONS
 
+def get_mime_type(extension):
+    """Maps common extensions to MIME types."""
+    ext_map = {
+        'png': 'image/png',
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'gif': 'image/gif',
+    }
+    return ext_map.get(extension.lower(), 'application/octet-stream')
 
-# Sample data (usually this would come from a database)
-api_data = {
-    "status": "success",
-    "message": "Welcome to the Flask API!",
-    "version": "1.0"
-}
+# --- API Endpoint (Corrected to POST) ---
 
-# Define a route for the API endpoint
-# By default, this accepts GET requests
-@app.route('/api/status', methods=['GET'])
-def get_status():
-    """Returns the current API status as JSON."""
-    # jsonify converts the Python dictionary into a JSON response
-    # and sets the correct Content-Type header (application/json)
-    return jsonify(api_data)
-
-def allowed_file(filename):
-    """Checks if a file has an allowed extension."""
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-@app.route('/api/foods', methods=['POST'])
-def get_foods():
-    """Returns the current API status as JSON."""
+@app.route('/api/analyze-food', methods=['POST'])
+def analyze_food_image():
     """
-    Handles image file uploads where the image is sent as a Base64 string
-    in a JSON body.
+    Analyzes a Base64 encoded image of food using the Gemini API.
     
     Expected JSON structure:
     {
@@ -53,39 +58,123 @@ def get_foods():
         "file_extension": "png" 
     }
     """
-    # Ensure the request contains JSON data
+    # 0. Check if the Gemini client is initialized
+    if client is None:
+        return jsonify({'error': 'Gemini API client not initialized. Check server logs.'}), 503
+
+    # 1. Ensure the request contains JSON data
     if not request.is_json:
         return jsonify({'error': 'Missing JSON in request'}), 400
 
     data = request.json
     
-    # Validate required fields
+    # 2. Validate required fields
     base64_string = data.get('image_data')
-    extension = data.get('file_extension', 'png') # Default to png if not provided
+    extension = data.get('file_extension', 'jpeg').strip().lower()
 
     if not base64_string:
         return jsonify({'error': 'Missing "image_data" field in JSON payload.'}), 400
     
-    if not allowed_file(f'dummy.{extension}'):
+    if not allowed_file(extension):
         return jsonify({'error': f'File extension "{extension}" is not allowed.'}), 400
 
+    # 3. Clean up and Decode the Base64 string
+    # Remove data URL prefix (e.g., 'data:image/png;base64,') if present
+    if ',' in base64_string:
+        base64_string = base64_string.split(',')[1]
 
-    # Get Gemini to process image
-    client = genai.Client()
-    response = client.models.generate_content(
-        model='gemini-2.5-flash',
-        contents=[
-        types.Part.from_bytes(
-            data=base64_string,
-            mime_type='image/jpeg',
-        ),
-        'Caption this image.'
-        ]
+    try:
+        # Decode the Base64 string into raw binary data
+        image_bytes = base64.b64decode(base64_string)
+    except Exception as e:
+        print(f"Base64 decoding error: {e}")
+        return jsonify({'error': 'Invalid Base64 string provided. Could not decode.'}), 400
+
+    # 4. Prepare the prompt and MIME type
+    mime_type = get_mime_type(extension)
+    prompt = (
+        "The image will contain either a recipe, or an image of the inside of a bag of groceries"
+        "Identify the items, and provide a json list of the item name (string), and a shelf life in days (integer)."
+        "For item names, convert collective nouns to singular nouns. For example, you would convert 'heads of lettuce' to 'lettuce'."
+        "Here is an example intended output:"
+        """[
+            {
+                "item_name": "lettuce",
+                "shelf_life_days": 7
+            },
+            {
+                "item_name": "tomato",
+                "shelf_life_days": 10
+            },
+            {
+                "item_name": "salmon",
+                "shelf_life_days": 2
+            },
+            {
+                "item_name": "cucumber",
+                "shelf_life_days": 7
+            },
+            {
+                "item_name": "lemon",
+                "shelf_life_days": 30
+            },
+            {
+                "item_name": "egg",
+                "shelf_life_days": 28
+            },
+            {
+                "item_name": "baguette",
+                "shelf_life_days": 3
+            },
+            {
+                "item_name": "avocado",
+                "shelf_life_days": 4
+            },
+            {
+                "item_name": "zucchini",
+                "shelf_life_days": 14
+            },
+            {
+                "item_name": "cheese",
+                "shelf_life_days": 21
+            },
+            {
+                "item_name": "milk",
+                "shelf_life_days": 10
+            }
+            ]"""
     )
 
-    print(response.text)
+    # Call the Gemini API
+    try:
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=[
+                types.Part.from_bytes(
+                    data=image_bytes,
+                    mime_type=mime_type,
+                ),
+                prompt
+            ],
+            config={
+                "response_mime_type": "application/json",
+                "response_schema": list[Food],
+            },
+        )
+        
+        print("Gemini Response:", response.text)
 
-    return jsonify(api_data)
+        # 6. Return the analysis result
+        return jsonify({
+            'analysis_result': response.text,
+            'status': 'Success',
+            'model': 'gemini-2.5-flash'
+        }), 200
+
+    except Exception as e:
+        print(f"Gemini API call failed: {e}")
+        # Return a 500 status code for server-side API issues
+        return jsonify({'error': f'Gemini API processing failed: {str(e)}'}), 500
 
 
 
@@ -210,7 +299,7 @@ def index_html():
             };
 
             try {
-                const response = await fetch('/api/foods', {
+                const response = await fetch('/api/analyze-food', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)

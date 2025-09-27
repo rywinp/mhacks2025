@@ -9,6 +9,7 @@ import base64
 class Food(BaseModel):
     food_name: str
     shelf_life: int
+    carbon_footprint: int
 
 # Load the environment variables from the .env file
 load_dotenv()
@@ -94,7 +95,7 @@ def analyze_food_image():
     mime_type = get_mime_type(extension)
     prompt = (
         "The image will contain either a recipe, or an image of the inside of a bag of groceries"
-        "Identify the items, and provide a json list of the item name (string), and a shelf life in days (integer)."
+        "Identify the items, and provide a json list of the item name (string), and a shelf life in days (integer), and the carbon footprint of the food(integer)."
         "For item names, convert collective nouns to singular nouns. For example, you would convert 'heads of lettuce' to 'lettuce'."
         "Here is an example intended output:"
         """[
@@ -176,8 +177,20 @@ def analyze_food_image():
         # Return a 500 status code for server-side API issues
         return jsonify({'error': f'Gemini API processing failed: {str(e)}'}), 500
 
+@app.route('/api/get-food', methods=['POST'])
+def fetch_food():
+    # Grab food, expiration date, and photo from supabase
+
+    return jsonify({'food_name'})
+
+@app.route('/api/food/<foodid>/', methods=['DELETE'])
+def delete_food(foodid):
+    """Delete food at foodid."""
+
+    # Interface supabase and delete food for foodid in the table foods
 
 
+"""
 @app.route('/index.html')
 def index_html():
     return '''
@@ -331,6 +344,7 @@ def index_html():
 </body>
 </html>
 '''
+"""
 
 # Run the application
 # This block ensures the server only runs when the script is executed directly

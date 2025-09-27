@@ -4,6 +4,7 @@
     "slug": "mhacks2025",
     "version": "1.0.0",
     "orientation": "portrait",
+    "entryPoint": "app/App.tsx",
     "icon": "./assets/images/icon.png",
     "scheme": "mhacks2025",
     "userInterfaceStyle": "automatic",

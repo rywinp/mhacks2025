@@ -24,6 +24,11 @@ export default function Camera() {
 
   const handleRetakePhoto = () => setPhoto(null);
 
+  function handleConfirmPhoto() {
+    console.log("handler works")
+    return;
+  }
+
   if (!permission.granted) {
     return (
       <View style={styles.container}>
@@ -40,38 +45,38 @@ export default function Camera() {
   }
 
   if (photo) {
-    return <PhotoPreviewSection photo={photo} handleRetakePhoto={handleRetakePhoto} />;
+    return <PhotoPreviewSection photo={photo} handleRetakePhoto={handleRetakePhoto} handleConfirmPhoto={handleConfirmPhoto} />;
   }
 
-return (
-  <View style={styles.container}>
-    <Stack.Screen options={{ headerShown: false }} />
+  return (
+    <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
 
-    {/* Back Arrow */}
-    <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-      <Text style={styles.backButtonText}>{'←'}</Text>
-    </TouchableOpacity>
-
-    {/* Instructions */}
-    <Text style={styles.instructionText}>
-      Make sure the items are well-lit and centered in the frame for best results.
-    </Text>
-
-    {/* Camera Box */}
-    <View style={styles.cameraWrapper}>
-      <CameraView style={styles.camera} facing={facing} ref={cameraRef} />
-    </View>
-
-    {/* Buttons (side by side) */}
-    <View style={styles.buttonRow}>
-      <TouchableOpacity style={styles.flipButton} onPress={toggleCameraFacing}>
-        <Text style={styles.flipButtonText}>Flip</Text>
+      {/* Back Arrow */}
+      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <Text style={styles.backButtonText}>{'←'}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.snapButton} onPress={handleTakePhoto} />
+      {/* Instructions */}
+      <Text style={styles.instructionText}>
+        Make sure the items are well-lit and centered in the frame for best results.
+      </Text>
+
+      {/* Camera Box */}
+      <View style={styles.cameraWrapper}>
+        <CameraView style={styles.camera} facing={facing} ref={cameraRef} />
+      </View>
+
+      {/* Buttons (side by side) */}
+      <View style={styles.buttonRow}>
+        <TouchableOpacity style={styles.flipButton} onPress={toggleCameraFacing}>
+          <Text style={styles.flipButtonText}>Flip</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.snapButton} onPress={handleTakePhoto} />
+      </View>
     </View>
-  </View>
-);
+  );
 
 }
 
@@ -139,4 +144,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   flipButtonText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
+  message: {
+    color: 'white',
+    textAlign: 'center',
+    fontSize: 16,
+    marginBottom: 16,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+
+  grantButton: {
+    backgroundColor: 'rgba(255,255,255,0.2)', // semi-transparent to match the flip button
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: 'white',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    alignSelf: 'center',
+  },
+
+  grantButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 18,
+    textAlign: 'center',
+  },
+
 });

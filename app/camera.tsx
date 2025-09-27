@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { useRouter } from 'expo-router';
+import ItemSelectorSection from '@/components/ItemSelectorSection';
 
 export default function Camera() {
   const [facing, setFacing] = useState<CameraType>('back');
@@ -11,6 +12,7 @@ export default function Camera() {
   const [photo, setPhoto] = useState<any>(null);
   const cameraRef = useRef<CameraView | null>(null);
   const router = useRouter();
+  const [step, setStep] = useState("zero");
 
   if (!permission) return <View />;
 
@@ -25,8 +27,14 @@ export default function Camera() {
   const handleRetakePhoto = () => setPhoto(null);
 
   function handleConfirmPhoto() {
-    console.log("handler works")
+    setStep("one")
+    console.log("handler works");
+
     return;
+  }
+
+  function toggleCameraFacing() {
+    setFacing(current => (current === 'back' ? 'front' : 'back'));
   }
 
   if (!permission.granted) {
@@ -40,8 +48,8 @@ export default function Camera() {
     );
   }
 
-  function toggleCameraFacing() {
-    setFacing(current => (current === 'back' ? 'front' : 'back'));
+  if (step === "one") {
+    return <ItemSelectorSection photo={photo}/>;
   }
 
   if (photo) {

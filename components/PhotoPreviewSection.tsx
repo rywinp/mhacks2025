@@ -7,9 +7,11 @@ import { TouchableOpacity, SafeAreaView, Image, StyleSheet, View } from 'react-n
 const PhotoPreviewSection = ({
     photo,
     handleRetakePhoto,
+    handleConfirmPhoto,
 }: {
     photo: CameraCapturedPicture;
     handleRetakePhoto: () => void;
+    handleConfirmPhoto: () => void;
 }) => (
     <SafeAreaView style={styles.container}>
         {/* Photo Box with Same Styling as Camera */}
@@ -26,7 +28,7 @@ const PhotoPreviewSection = ({
                 <Fontisto name="trash" size={28} color="white" />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionButton} onPress={() => console.log("Confirm pressed!")}>
+            <TouchableOpacity style={styles.actionButton} onPress={handleConfirmPhoto}>
                 <Fontisto name="check" size={28} color="white" />
             </TouchableOpacity>
         </View>

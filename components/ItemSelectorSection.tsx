@@ -136,9 +136,10 @@ function ItemImageComponent({
         <View style={styles.itemCard}>
             {/* Image */}
             <Image
-                source={require('@/assets/images/banana.jpg')} // replace with item.image if available
+                source={{ uri: `https://zrmjikvmsxwlpngwrpey.supabase.co/storage/v1/object/public/Images/${item.food_name}.png` }} // item.image should be a URL string
                 style={styles.itemImage}
             />
+
 
             {/* Name */}
             <Text style={styles.itemName}>{item.food_name}</Text>
@@ -146,7 +147,7 @@ function ItemImageComponent({
             {/* Shelf life */}
             <Text style={styles.shelfLife}>Shelf Life: {item.shelf_life} days</Text>
 
-                        {/* Shelf life */}
+            {/* Shelf life */}
             <Text style={styles.shelfLife}>Carbon Footprint: {item.carbon_footprint} days</Text>
 
             {/* Buttons */}

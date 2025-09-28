@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { CameraCapturedPicture } from 'expo-camera';
 import { Fontisto } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import * as API from '../hooks/supabaseFront';
 
 
 interface Props {

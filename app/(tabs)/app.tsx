@@ -1,46 +1,65 @@
 // FridgeScreen.tsx
-import React, { useRef } from "react";
-import { 
-  View, Text, StyleSheet, FlatList, Dimensions, TouchableOpacity, Button, Alert 
-} from "react-native";
-import Animated, { 
-  useSharedValue, useAnimatedScrollHandler, useAnimatedStyle, interpolateColor, Extrapolate 
-} from "react-native-reanimated";
-import { LinearGradient } from "react-native-linear-gradient";
-import FoodItem, { FoodItemProps } from "../../components/food-item.tsx";
 import { Link } from "expo-router";
-import { supabase } from '../../hooks/supabaseClient.tsx';
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Alert,
+  Button,
+  Dimensions,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
+import Animated, {
+  interpolateColor,
+  useAnimatedScrollHandler, useAnimatedStyle,
+  useSharedValue
+} from "react-native-reanimated";
+import FoodItem, { FoodItemProps } from "../../components/food-item.tsx";
+import * as API from '../../hooks/supabaseFront';
 
 const { width } = Dimensions.get("window");
 
 const TABS = ["Fresh Goods", "Nearing Date", "Time to Toss"] as const;
-type TabKey = typeof TABS[number];
+//type TabKey = typeof TABS[number];
 
-const foodData: Record<TabKey, FoodItemProps[]> = {
-  "Fresh Goods": [
-    { name: "Apples", shelfLife: "5 days", image: require('../../assets/images/Tung.png') },
-    { name: "Carrots", shelfLife: "7 days" },
-    { name: "Milk", shelfLife: "3 days" },
-    { name: "Spinach", shelfLife: "2 days" },
-    { name: "Eggs", shelfLife: "10 days" },
-  ],
-  "Nearing Date": [
-    { name: "Yogurt", shelfLife: "1 day" },
-    { name: "Cheese", shelfLife: "2 days" },
-    { name: "Bread", shelfLife: "1 day" },
-    { name: "Strawberries", shelfLife: "1 day" },
-    { name: "Tomatoes", shelfLife: "2 days" },
-  ],
-  "Time to Toss": [
-    { name: "Lettuce", shelfLife: "0 days" },
-    { name: "Bananas", shelfLife: "0 days" },
-    { name: "Avocados", shelfLife: "0 days" },
-    { name: "Cucumbers", shelfLife: "0 days" },
-    { name: "Mushrooms", shelfLife: "0 days" },
-  ],
-};
+// const { data, error } = await supabase.auth.getUser()
 
-const TAB_COLORS: Record<TabKey, string> = {
+// if (error) {
+//   console.error(error)
+// } else {
+//   const user = data.user
+//   const userId = user?.id  // this is the uuid you want
+//   console.log("User ID:", userId)
+// }
+
+
+// const foodData: Record<TabKey, FoodItemProps[]> = {
+//   "Fresh Goods": [
+//     { name: "Apples", shelfLife: "5 days", image: require('../../assets/images/Tung.png') },
+//     { name: "Carrots", shelfLife: "7 days" },
+//     { name: "Milk", shelfLife: "3 days" },
+//     { name: "Spinach", shelfLife: "2 days" },
+//     { name: "Eggs", shelfLife: "10 days" },
+//   ],
+//   "Nearing Date": [
+//     { name: "Yogurt", shelfLife: "1 day" },
+//     { name: "Cheese", shelfLife: "2 days" },
+//     { name: "Bread", shelfLife: "1 day" },
+//     { name: "Strawberries", shelfLife: "1 day" },
+//     { name: "Tomatoes", shelfLife: "2 days" },
+//   ],
+//   "Time to Toss": [
+//     { name: "Lettuce", shelfLife: "0 days" },
+//     { name: "Bananas", shelfLife: "0 days" },
+//     { name: "Avocados", shelfLife: "0 days" },
+//     { name: "Cucumbers", shelfLife: "0 days" },
+//     { name: "Mushrooms", shelfLife: "0 days" },
+//   ],
+// };
+
+const TAB_COLORS: Record<API.TabKey, string> = {
   "Fresh Goods": "rgba(76,175,80,",    // green
   "Nearing Date": "rgba(255,165,0,",   // yellowish orange
   "Time to Toss": "rgba(255,59,48,",   // red
@@ -49,6 +68,56 @@ const TAB_COLORS: Record<TabKey, string> = {
 export default function FridgeScreen() {
   const scrollX = useSharedValue(0);
   const scrollRef = useRef<Animated.ScrollView>(null);
+
+
+  const [foodData, setFoodData] = useState<Record<API.TabKey, FoodItemProps[]>>({
+  "Fresh Goods": [],
+  "Nearing Date": [],
+  "Time to Toss": [],
+});
+
+  useEffect(() => {
+
+    async function fetchFoods() {
+      try {
+        const userid = await API.getCurrentUserId();
+        if (!userid) {
+          console.error("No user logged in");
+          return;
+        }
+
+        const foods = await API.getFoodsByUser(userid).then(API.processFoods);
+        setFoodData(foods);
+      } catch (error) {
+        console.error("Error fetching foods:", error);
+        setFoodData({
+          "Fresh Goods": [],
+          "Nearing Date": [],
+          "Time to Toss": [],
+        });
+      }
+    }
+
+    // async function insertSampleFoods() {
+    //   const userid = await API.getCurrentUserId();
+    //   if (!userid) {
+    //     console.error("No user logged in");
+    //     return;
+    //   }
+    //   API.insertFoods([
+    //   { name: "Apples", daysUntilExpire: 5, user_id: userid },
+    //   { name: "Carrots", daysUntilExpire: 7, user_id: userid },
+    //   { name: "Milk", daysUntilExpire: 3, user_id: userid },
+    //   { name: "Spinach", daysUntilExpire: 2, user_id: userid},
+    //   { name: "Eggs", daysUntilExpire: 10, user_id: userid},
+    //   ]);
+    // }
+
+    // // Uncomment the next line to insert sample foods on first run    
+    // insertSampleFoods();
+    fetchFoods();
+  }, []);
+
 
   const onScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -67,7 +136,9 @@ export default function FridgeScreen() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    console.log(foodData);
+    //tmp
+    //await supabase.auth.signOut();
   };
 
   const handleAddFood = () => {

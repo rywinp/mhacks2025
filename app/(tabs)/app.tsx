@@ -71,10 +71,10 @@ export default function FridgeScreen() {
 
 
   const [foodData, setFoodData] = useState<Record<API.TabKey, FoodItemProps[]>>({
-  "Fresh Goods": [],
-  "Nearing Date": [],
-  "Time to Toss": [],
-});
+    "Fresh Goods": [],
+    "Nearing Date": [],
+    "Time to Toss": [],
+  });
 
   useEffect(() => {
 
@@ -87,6 +87,7 @@ export default function FridgeScreen() {
         }
 
         const foods = await API.getFoodsByUser(userid).then(API.processFoods);
+        console.log(foods);
         setFoodData(foods);
       } catch (error) {
         console.error("Error fetching foods:", error);
@@ -105,15 +106,15 @@ export default function FridgeScreen() {
     //     return;
     //   }
     //   API.insertFoods([
-    //   { name: "Apples", daysUntilExpire: 5, user_id: userid },
-    //   { name: "Carrots", daysUntilExpire: 7, user_id: userid },
-    //   { name: "Milk", daysUntilExpire: 3, user_id: userid },
-    //   { name: "Spinach", daysUntilExpire: 2, user_id: userid},
-    //   { name: "Eggs", daysUntilExpire: 10, user_id: userid},
+    //     { name: "cookie", daysUntilExpire: 5, user_id: userid, image: `https://zrmjikvmsxwlpngwrpey.supabase.co/storage/v1/object/public/Images/cookie.png` },
+    //     { name: "avocado", daysUntilExpire: 7, user_id: userid, image: `https://zrmjikvmsxwlpngwrpey.supabase.co/storage/v1/object/public/Images/avocado.png` },
+    //     { name: "cheese", daysUntilExpire: 3, user_id: userid, image: `https://zrmjikvmsxwlpngwrpey.supabase.co/storage/v1/object/public/Images/cheese.png` },
+    //     { name: "cucumber", daysUntilExpire: 2, user_id: userid, image: `https://zrmjikvmsxwlpngwrpey.supabase.co/storage/v1/object/public/Images/cucumber.png` },
+    //     { name: "egg", daysUntilExpire: 10, user_id: userid, image: `https://zrmjikvmsxwlpngwrpey.supabase.co/storage/v1/object/public/Images/egg.png` },
     //   ]);
     // }
 
-    // // Uncomment the next line to insert sample foods on first run    
+    // Uncomment the next line to insert sample foods on first run    
     // insertSampleFoods();
     fetchFoods();
   }, []);
@@ -222,8 +223,7 @@ export default function FridgeScreen() {
                         <FoodItem
                           key={`${food.name}-${idx}`}
                           name={food.name}
-                          shelfLife={food.shelfLife}
-                          image={food.image}
+                          expdate={food.expdate}
                         />
                       ))}
                     </View>
@@ -308,4 +308,6 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   addButtonText: {
-    color: "#fff",}})
+    color: "#fff",
+  }
+})

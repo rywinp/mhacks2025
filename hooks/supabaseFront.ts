@@ -40,7 +40,7 @@ function generateExpireDate(daysFromNow: number): string {
 
 // Updated insertFoods
 export async function insertFoods(
-  foods: { name: string; daysUntilExpire: number; user_id: string }[]
+  foods: { name: string; daysUntilExpire: number; user_id: string; image: string; }[]
 ) {
   const foodsWithDates = foods.map(f => ({
     name: f.name,

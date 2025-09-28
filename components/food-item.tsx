@@ -3,26 +3,25 @@ import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 
 export type FoodItemProps = {
   name: string;
-  shelfLife: string;
+  expdate: string;
   image?: string; // optional image URL
 };
 
-export default function FoodItem({ name, shelfLife, image }: FoodItemProps) {
+export default function FoodItem({ name, expdate }: FoodItemProps) {
   return (
     <TouchableOpacity style={styles.card} activeOpacity={0.8}>
       <View style={styles.content}>
         {/* Image or Placeholder */}
-        {image ? (
-          <Image source={require( "@/assets/images/Tung.png")} style={styles.image} /> //change this to the dynamic url that the ai spits out
-        ) : (
-          <View style={styles.iconPlaceholder} />
-        )}
+          <Image
+            source={{ uri: `https://zrmjikvmsxwlpngwrpey.supabase.co/storage/v1/object/public/Images/${name}.png` }} // item.image should be a URL string
+            style={styles.image}
+          />
 
         {/* Food Name */}
         <Text style={styles.name}>{name}</Text>
 
         {/* Shelf Life */}
-        <Text style={styles.shelfLife}>{shelfLife}</Text>
+        <Text style={styles.shelfLife}>{expdate}</Text>
       </View>
     </TouchableOpacity>
   );

@@ -1,11 +1,15 @@
 import os
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request
+import json
 from dotenv import load_dotenv # Used to load .env file
 from google import genai
 from google.genai import types
 from pydantic import BaseModel
+import time
 import base64
+from supabase import create_client, Client
 
+# Json formatter
 class Food(BaseModel):
     food_name: str
     shelf_life: int
@@ -14,11 +18,18 @@ class Food(BaseModel):
 # Load the environment variables from the .env file
 load_dotenv()
 
+supabase_url = os.getenv("SUPABASE_URL")
+supabase_key = os.getenv("SUPABASE_KEY")
+
+supabase: Client =  create_client(supabase_url, supabase_key)
+
+bucket_name = "Images"  # Supabase bucket name
+file_format = "png"
+file_content_type = f"image/{file_format}"
+
+
 api_key = os.getenv("GEMINI_API_KEY")
 
-# --- Configuration ---
-# NOTE: The API key for Gemini must be set as an environment variable (GEMINI_API_KEY)
-# or initialized directly. For canvas, we assume the environment handles this.
 # Initialize Gemini Client
 try:
     # If the environment provides the API key, the client will pick it up automatically.
@@ -51,7 +62,7 @@ def get_mime_type(extension):
 @app.route('/api/analyze-food', methods=['POST'])
 def analyze_food_image():
     """
-    Analyzes a Base64 encoded image of food using the Gemini API.
+    Analyzes a Base64 encoded image of food using the Gemini API, 
     
     Expected JSON structure:
     {
@@ -67,7 +78,7 @@ def analyze_food_image():
     if not request.is_json:
         return jsonify({'error': 'Missing JSON in request'}), 400
 
-    data = request.json
+    data = request.get_json()
     
     # 2. Validate required fields
     base64_string = data.get('image_data')
@@ -163,33 +174,63 @@ def analyze_food_image():
             },
         )
         
-        print("Gemini Response:", response.text)
+        print(response.text)
 
-        # 6. Return the analysis result
-        return jsonify({
-            'analysis_result': response.text,
-            'status': 'Success',
-            'model': 'gemini-2.5-flash'
-        }), 200
+        
 
     except Exception as e:
         print(f"Gemini API call failed: {e}")
         # Return a 500 status code for server-side API issues
         return jsonify({'error': f'Gemini API processing failed: {str(e)}'}), 500
 
-@app.route('/api/get-food', methods=['POST'])
-def fetch_food():
-    # Grab food, expiration date, and photo from supabase
+    print(type(response.text))
 
-    return jsonify({'food_name'})
+    data = json.loads(response.text)
 
-@app.route('/api/food/<foodid>/', methods=['DELETE'])
-def delete_food(foodid):
-    """Delete food at foodid."""
+    for food in data:
 
-    # Interface supabase and delete food for foodid in the table foods
+        print(food)
+
+        image_response = client.models.generate_images(
+            model='imagen-4.0-generate-001',
+            prompt='Stock photo of a ' + food["food_name"] + ' with a white background',
+            config=types.GenerateImagesConfig(
+                number_of_images= 1,
+            )
+        )
+        
+        image_data = image_response.generated_images[0].image.image_bytes
+
+        file_path_in_storage = food["food_name"] + ".png" # Desired path in storage
 
 
+        try:
+            print(f"Connecting to Supabase and uploading '{file_path_in_storage}'...")
+            # Initialize Supabase client
+            supabase: Client = create_client(supabase_url, supabase_key)
+            
+            print("Uploading image")
+            # Upload the file
+            supabase.storage.from_(bucket_name).upload(
+                file=image_data,
+                path=file_path_in_storage,
+                file_options={"content-type": file_content_type}
+            )
+
+            print("Done uploading")
+                    
+            # Construct the public URL (assuming your bucket has public access, or you use `get_public_url`)
+        except Exception as e:
+            print(f"An error occurred during Supabase upload: {e}")
+
+    return jsonify({
+            'analysis_result': response.text,
+            'status': 'Success',
+            'model': 'gemini-2.5-flash'
+        }), 200
+
+
+# To test image upload
 """
 @app.route('/index.html')
 def index_html():

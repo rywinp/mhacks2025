@@ -22,6 +22,7 @@ export default function AuthInput({
     <TextInput
       style={styles.input}
       placeholder={placeholder}
+      placeholderTextColor="#aaa"  // 👈 light placeholder text
       value={value}
       onChangeText={onChangeText}
       secureTextEntry={secureTextEntry}
@@ -39,5 +40,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 12,
     fontSize: 16,
+    color: 'white',          // 👈 white input text
+    backgroundColor: 'transparent', // optional: transparent background
   },
 });

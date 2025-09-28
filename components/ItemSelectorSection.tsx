@@ -11,8 +11,9 @@ interface Props {
 }
 
 interface Item {
-    name: string;
+    food_name: string;
     shelf_life: number;
+    carbon_footprint: number;
     image: string;
 }
 
@@ -51,13 +52,41 @@ export default function ItemSelectorSection({ photo }: Props) {
     }
 
     useEffect(() => {
-        // Initial placeholder data
-        setData([
-            { name: "Banana", shelf_life: 5, image: "" },
-            { name: "Grapes", shelf_life: 3, image: "" }
-        ]);
-        setSet(true);
+        const fetchData = async () => {
+            try {
+                console.log("Fetching data from API...");
+                const base64 = photo.base64; // make sure photo is defined
+
+                const response = await fetch(
+                    "https://mhacksflaskapiletsgo-otse5kpmq-rywins-projects.vercel.app/api/analyze-food",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            image_data: base64,
+                            file_extension: "jpeg",
+                        }),
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log("API response:", data);
+                const items = JSON.parse(data.analysis_result);
+                setData(items); // <-- store API response in state
+                setSet(true);  // <-- your existing flag
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        };
+
+        fetchData();
     }, []);
+
 
     useEffect(() => {
         if (data.length === 0 && set === true) {
@@ -65,7 +94,16 @@ export default function ItemSelectorSection({ photo }: Props) {
                 router.replace('/(tabs)/app'); // redirect to home page
             }
         }
-    }, [data])
+    }, [data, set]);
+
+    if (set === false) {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.title}>Detecting Items...</Text>
+                <Text style={styles.placeholder}>Please wait while we analyze the photo.</Text>
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>
@@ -93,6 +131,7 @@ function ItemImageComponent({
     handleNext: (item: Item) => void;
     handleDecline: () => void;
 }) {
+    console.log("Rendering item:", item);
     return (
         <View style={styles.itemCard}>
             {/* Image */}
@@ -102,10 +141,13 @@ function ItemImageComponent({
             />
 
             {/* Name */}
-            <Text style={styles.itemName}>{item.name}</Text>
+            <Text style={styles.itemName}>{item.food_name}</Text>
 
             {/* Shelf life */}
             <Text style={styles.shelfLife}>Shelf Life: {item.shelf_life} days</Text>
+
+                        {/* Shelf life */}
+            <Text style={styles.shelfLife}>Carbon Footprint: {item.carbon_footprint} days</Text>
 
             {/* Buttons */}
             <View style={styles.buttonRow}>

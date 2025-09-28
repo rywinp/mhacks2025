@@ -61,7 +61,7 @@ export default function ItemSelectorSection({ photo }: Props) {
     useEffect(() => {
         if (data.length === 0 && set === true) {
             if (data.length === 0) {
-                router.replace('/(tabs)'); // redirect to home page
+                router.replace('/(tabs)/app'); // redirect to home page
             }
         }
     }, [data])

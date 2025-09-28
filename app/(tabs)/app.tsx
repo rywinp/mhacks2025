@@ -1,5 +1,7 @@
 import React, { useRef } from "react";
+import { supabase } from '../../hooks/supabaseClient.tsx';
 import {
+  Button,
   View,
   Text,
   StyleSheet,
@@ -73,12 +75,17 @@ export default function FridgeScreen() {
     scrollRef.current?.scrollTo({ x: width * index, y: 0, animated: true });
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
   const handleAddFood = () => {
     Alert.alert("Add Food Item", "This will open the add food item flow.");
   };
 
   return (
     <View style={styles.container}>
+       <Button title="Logout" onPress={handleLogout} />
       {/* Header with App Name */}
       <View style={styles.header}>
         <Text style={styles.appTitle}>  Terava</Text>

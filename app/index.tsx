@@ -28,7 +28,7 @@ export default function index() {
     if (session) {
       console.log("SESSION from _layout.tsx: ");
       console.log(session);
-      router.replace('/(tabs)'); // Navigate to the main app if logged in
+      router.replace('/(tabs)/app'); // Navigate to the main app if logged in
     }
   }, [session]);
 

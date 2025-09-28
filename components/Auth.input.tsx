@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 12,
     fontSize: 16,
-    color: 'white',          // 👈 white input text
+    color: 'black',          // 👈 white input text
     backgroundColor: 'transparent', // optional: transparent background
   },
 });

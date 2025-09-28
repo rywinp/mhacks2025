@@ -6,7 +6,7 @@ import AuthInput from '../components/Auth.input';
 import AuthButton from '../components/AuthButton';
 
 export default function LoginScreen() {
-  const router = useRouter(); // Expo Router hook
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -34,7 +34,6 @@ export default function LoginScreen() {
       Alert.alert('Login Error', error.message);
     } else {
       Alert.alert('Success', 'You are logged in!');
-      // Navigate to /newItem
       router.push('/(tabs)/app');
     }
   };
@@ -49,12 +48,16 @@ export default function LoginScreen() {
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
+        style={styles.input}
+        placeholderTextColor="#888"
       />
       <AuthInput
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        style={styles.input}
+        placeholderTextColor="#888"
       />
 
       <AuthButton title="Sign Up" onPress={handleSignUp} />
@@ -68,13 +71,16 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 24,
-    backgroundColor: '#121212',
+    backgroundColor: '#ffffff', // ✅ white background
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: 'white',
+    color: '#000000', // ✅ black text for contrast
     textAlign: 'center',
     marginBottom: 32,
+  },
+  input: {
+    color: '#000000', // ✅ black input text
   },
 });

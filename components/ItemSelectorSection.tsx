@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { CameraCapturedPicture } from 'expo-camera';
 import { Fontisto } from '@expo/vector-icons';
 import { useUploadImage } from '@/hooks/uploadImage';
+import { useRouter } from 'expo-router';
+
 
 interface Props {
     photo: CameraCapturedPicture;
@@ -15,6 +17,8 @@ interface Item {
 }
 
 export default function ItemSelectorSection({ photo }: Props) {
+
+    const router = useRouter();
     // const { uploadImage, uploading, error } = useUploadImage();
 
     // useEffect(() => {
@@ -31,7 +35,9 @@ export default function ItemSelectorSection({ photo }: Props) {
     // }, []); // empty dependency array runs this effect once
 
     const [data, setData] = useState<Item[]>([]);
+    const [set, setSet] = useState<boolean>(false);
     const [modifiedData, setModifiedData] = useState<Item[]>([]);
+
 
     function handleNext(item: Item) {
         setModifiedData(prev => [...prev, item]);
@@ -50,14 +56,23 @@ export default function ItemSelectorSection({ photo }: Props) {
             { name: "Banana", shelf_life: 5, image: "" },
             { name: "Grapes", shelf_life: 3, image: "" }
         ]);
+        setSet(true);
     }, []);
+
+    useEffect(() => {
+        if (data.length === 0 && set === true) {
+            if (data.length === 0) {
+                router.replace('/fridge'); // redirect to home page
+            }
+        }
+    }, [data])
 
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Detected Items</Text>
 
             {data.length === 0 ? (
-                <Text style={styles.placeholder}>No items detected yet.</Text>
+                <Text style={styles.placeholder}>No items left.</Text>
             ) : (
                 <ItemImageComponent
                     item={data[0]}

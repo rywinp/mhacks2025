@@ -5,7 +5,6 @@ from dotenv import load_dotenv # Used to load .env file
 from google import genai
 from google.genai import types
 from pydantic import BaseModel
-import time
 import base64
 from supabase import create_client, Client
 

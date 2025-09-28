@@ -16,6 +16,7 @@ import Animated, {
   Extrapolate,
 } from "react-native-reanimated";
 import FoodItem, { FoodItemProps } from "../../components/food-item.tsx";
+import { Link } from "expo-router";
 
 const { width } = Dimensions.get("window");
 
@@ -160,9 +161,11 @@ export default function FridgeScreen() {
       </Animated.ScrollView>
 
       {/* Add Food Item Button */}
-      <TouchableOpacity style={styles.addButton} onPress={handleAddFood} activeOpacity={0.8}>
-        <Text style={styles.addButtonText}>+ Add Food Item</Text>
-      </TouchableOpacity>
+      <Link href="/newItem" asChild>
+        <TouchableOpacity style={styles.addButton} activeOpacity={0.8}>
+          <Text style={styles.addButtonText}>+ Add Food Item</Text>
+        </TouchableOpacity>
+      </Link>
     </View>
   );
 }

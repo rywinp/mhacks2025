@@ -11,25 +11,32 @@ const router = useRouter();
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
     useEffect(() => {
       const getSession = async () => {
         const { data } = await supabase.auth.getSession();
         setSession(data.session);
+        setLoading(false);
       };
       getSession();
   
       const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
         setSession(session);
+        setLoading(false);
       });
   
       return () => listener.subscription.unsubscribe();
     }, []);
 
     useEffect(() => {
+      if (!loading){
         if (!session) {
-          router.replace('/loginScreen'); // Navigate to the main app if logged in
+          console.log("SESSION from _layout.tsx: ");
+          console.log(session);
+          router.replace('/'); // Navigate to the main app if logged in
         }
-      }, [session]);
+      }
+      }, [session, loading]);
 
 
   return (
@@ -40,7 +47,7 @@ export default function TabLayout() {
         tabBarButton: HapticTab,
       }}>
       <Tabs.Screen
-        name="index"
+        name="app"
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
@@ -50,6 +57,13 @@ export default function TabLayout() {
         name="explore"
         options={{
           title: 'Explore',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="fridge"
+        options={{
+          title: 'fridge',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
         }}
       />

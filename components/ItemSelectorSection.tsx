@@ -58,7 +58,7 @@ export default function ItemSelectorSection({ photo }: Props) {
                 const base64 = photo.base64; // make sure photo is defined
 
                 const response = await fetch(
-                    "https://mhacks2025-a2em39bdh-rywins-projects.vercel.app/api/analyze-food",
+                    "https://mircale2025-iw8xpap14-rywins-projects.vercel.app/api/analyze-food",
                     {
                         method: "POST",
                         headers: {
@@ -73,6 +73,7 @@ export default function ItemSelectorSection({ photo }: Props) {
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
+                    console.log(response);
                 }
                 const data = await response.json();
                 console.log("API response:", data);

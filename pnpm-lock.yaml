@@ -58,7 +58,7 @@ importers:
         version: 8.0.8(expo@54.0.10)(react-native@0.81.4(@babel/core@7.28.4)(@types/react@19.1.14)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)
       expo-router:
         specifier: ~6.0.8
-        version: 6.0.8(fmfbygvmxwjptvgfqkvzulgydy)
+        version: 6.0.8(b02f23ff693bb2895bb4f1fa961bfb4a)
       expo-splash-screen:
         specifier: ~31.0.10
         version: 31.0.10(expo@54.0.10)
@@ -5289,7 +5289,7 @@ snapshots:
       wrap-ansi: 7.0.0
       ws: 8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10)
     optionalDependencies:
-      expo-router: 6.0.8(fmfbygvmxwjptvgfqkvzulgydy)
+      expo-router: 6.0.8(b02f23ff693bb2895bb4f1fa961bfb4a)
       react-native: 0.81.4(@babel/core@7.28.4)(@types/react@19.1.14)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - '@modelcontextprotocol/sdk'
@@ -7400,7 +7400,7 @@ snapshots:
       react: 19.1.0
       react-native: 0.81.4(@babel/core@7.28.4)(@types/react@19.1.14)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10)
 
-  expo-router@6.0.8(fmfbygvmxwjptvgfqkvzulgydy):
+  expo-router@6.0.8(b02f23ff693bb2895bb4f1fa961bfb4a):
     dependencies:
       '@expo/metro-runtime': 6.1.2(expo@54.0.10)(react-dom@19.1.0(react@19.1.0))(react-native@0.81.4(@babel/core@7.28.4)(@types/react@19.1.14)(bufferutil@4.0.9)(react@19.1.0)(utf-8-validate@5.0.10))(react@19.1.0)
       '@expo/schema-utils': 0.1.7

@@ -11,11 +11,12 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
 
   const handleSignUp = async () => {
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({ email, password });
 
     if (error) {
       Alert.alert('Sign Up Error', error.message);
     } else {
+      console.log('Sign up response:', data, error);
       Alert.alert(
         'Check your email',
         'We sent you a confirmation link. Please verify your email before logging in.'

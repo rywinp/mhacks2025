@@ -1,46 +1,63 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 
 export type FoodItemProps = {
   name: string;
   shelfLife: string;
-  //add image item
+  image?: string; // optional image URL
 };
 
-export default function FoodItem({ name, shelfLife }: FoodItemProps) {
+export default function FoodItem({ name, shelfLife, image }: FoodItemProps) {
   return (
     <TouchableOpacity style={styles.card} activeOpacity={0.8}>
-      <Text style={styles.name}>{name}</Text>
-      <Text style={styles.shelfLife}>{shelfLife}</Text>
+      <View style={styles.content}>
+        {/* Image or Placeholder */}
+        {image ? (
+          <Image source={require( "@/assets/images/Tung.png")} style={styles.image} /> //change this to the dynamic url that the ai spits out
+        ) : (
+          <View style={styles.iconPlaceholder} />
+        )}
+
+        {/* Food Name */}
+        <Text style={styles.name}>{name}</Text>
+
+        {/* Shelf Life */}
+        <Text style={styles.shelfLife}>{shelfLife}</Text>
+      </View>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    width: 180,
-    height: 300,
+    backgroundColor: "#f9f9f9",
     borderRadius: 16,
-    backgroundColor: "#f0f0f0",
+    padding: 16,
+    margin: 8,
+    width: 180,
+    height: 260,
     justifyContent: "center",
     alignItems: "center",
-    margin: 8,
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
     elevation: 3,
   },
-  name: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-    textAlign: "center",
+  content: { alignItems: "center" },
+  iconPlaceholder: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "#e0e0e0",
+    marginBottom: 12,
   },
-  shelfLife: {
-    fontSize: 13,
-    color: "#666",
-    marginTop: 4,
-    textAlign: "center",
+  image: {
+    width: 180,
+    height: 180,
+    borderRadius: 16,
+    marginBottom: 12,
   },
+  name: { fontSize: 20, fontWeight: "600", color: "#333", textAlign: "center" },
+  shelfLife: { fontSize: 13, color: "green", marginTop: 4, textAlign: "center" },
 });

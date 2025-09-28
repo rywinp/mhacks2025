@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "usesAppleSignIn": true
     },
     "android": {
       "adaptiveIcon": {
@@ -26,8 +27,10 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "expo-apple-authentication",
       "expo-router",
       [
+        
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
@@ -36,6 +39,7 @@
           "backgroundColor": "#ffffff",
           "dark": {
             "backgroundColor": "#000000"
+            
           }
         }
       ]

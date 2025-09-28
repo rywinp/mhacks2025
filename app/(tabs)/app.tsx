@@ -1,24 +1,15 @@
+// FridgeScreen.tsx
 import React, { useRef } from "react";
-import { supabase } from '../../hooks/supabaseClient.tsx';
-import {
-  Button,
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  Dimensions,
-  TouchableOpacity,
-  Alert,
+import { 
+  View, Text, StyleSheet, FlatList, Dimensions, TouchableOpacity, Button, Alert 
 } from "react-native";
-import Animated, {
-  useSharedValue,
-  useAnimatedScrollHandler,
-  useAnimatedStyle,
-  interpolate,
-  Extrapolate,
+import Animated, { 
+  useSharedValue, useAnimatedScrollHandler, useAnimatedStyle, interpolateColor, Extrapolate 
 } from "react-native-reanimated";
+import { LinearGradient } from "react-native-linear-gradient";
 import FoodItem, { FoodItemProps } from "../../components/food-item.tsx";
 import { Link } from "expo-router";
+import { supabase } from '../../hooks/supabaseClient.tsx';
 
 const { width } = Dimensions.get("window");
 
@@ -27,7 +18,7 @@ type TabKey = typeof TABS[number];
 
 const foodData: Record<TabKey, FoodItemProps[]> = {
   "Fresh Goods": [
-    { name: "Apples", shelfLife: "5 days", image: "@/assets/images/Tung.png" },
+    { name: "Apples", shelfLife: "5 days", image: require('../../assets/images/Tung.png') },
     { name: "Carrots", shelfLife: "7 days" },
     { name: "Milk", shelfLife: "3 days" },
     { name: "Spinach", shelfLife: "2 days" },
@@ -83,102 +74,109 @@ export default function FridgeScreen() {
     Alert.alert("Add Food Item", "This will open the add food item flow.");
   };
 
+  // Animated background style
+  const animatedBackgroundStyle = useAnimatedStyle(() => {
+    const backgroundColor = interpolateColor(
+      scrollX.value,
+      [0, width, 2 * width],
+      ['rgba(76,175,80,0.2)', 'rgba(255,165,0,0.2)', 'rgba(255,59,48,0.2)']
+    );
+    return { backgroundColor };
+  });
+
   return (
-    <View style={styles.container}>
-       <Button title="Logout" onPress={handleLogout} />
-      {/* Header with App Name */}
-      <View style={styles.header}>
-        <Text style={styles.appTitle}>  Terava</Text>
-        <View style={styles.floatingTabBar}>
-          {TABS.map((tab, index) => {
-            const animatedStyle = useAnimatedStyle(() => {
-              const isActive = interpolate(
-                scrollX.value,
-                [(index - 0.5) * width, index * width, (index + 0.5) * width],
-                [0, 1, 0],
-                Extrapolate.CLAMP
-              );
-              return {
-                backgroundColor: `${TAB_COLORS[tab]}${isActive})`,
-              };
-            });
+    <View style={{ flex: 1 }}>
+      {/* Animated Background */}
+      <Animated.View style={[StyleSheet.absoluteFill, animatedBackgroundStyle]} />
 
-            const animatedTextStyle = useAnimatedStyle(() => {
-              const isActive = interpolate(
-                scrollX.value,
-                [(index - 0.5) * width, index * width, (index + 0.5) * width],
-                [0, 1, 0],
-                Extrapolate.CLAMP
-              );
-              return {
-                color: isActive > 0.5 ? "#fff" : "#333",
-              };
-            });
+      {/* Main Content */}
+      <View style={styles.container}>
+        <Button title="Logout" onPress={handleLogout} />
 
+        {/* Header with App Name */}
+        <View style={styles.header}>
+          <Text style={styles.appTitle}>Terava</Text>
+          <View style={styles.floatingTabBar}>
+            {TABS.map((tab, index) => {
+              const animatedStyle = useAnimatedStyle(() => {
+                const isActive = scrollX.value >= index * width - width / 2 && scrollX.value <= index * width + width / 2 ? 1 : 0;
+                return {
+                  backgroundColor: `${TAB_COLORS[tab]}${isActive})`,
+                };
+              });
+
+              const animatedTextStyle = useAnimatedStyle(() => {
+                const isActive = scrollX.value >= index * width - width / 2 && scrollX.value <= index * width + width / 2 ? 1 : 0;
+                return {
+                  color: isActive > 0.5 ? "#fff" : "#333",
+                };
+              });
+
+              return (
+                <Animated.View key={tab} style={[styles.tab, animatedStyle]}>
+                  <TouchableOpacity onPress={() => handleTabPress(index)}>
+                    <Animated.Text style={[styles.tabText, animatedTextStyle]}>
+                      {tab}
+                    </Animated.Text>
+                  </TouchableOpacity>
+                </Animated.View>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* Scrollable Pages */}
+        <Animated.ScrollView
+          ref={scrollRef}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={onScroll}
+          scrollEventThrottle={16}
+          contentContainerStyle={{ paddingTop: 160, paddingBottom: 100 }}
+        >
+          {TABS.map((tab) => {
+            const pages = getPages(foodData[tab]);
             return (
-              <Animated.View key={tab} style={[styles.tab, animatedStyle]}>
-                <TouchableOpacity onPress={() => handleTabPress(index)}>
-                  <Animated.Text style={[styles.tabText, animatedTextStyle]}>
-                    {tab}
-                  </Animated.Text>
-                </TouchableOpacity>
-              </Animated.View>
+              <View key={tab} style={styles.page}>
+                <FlatList
+                  data={pages}
+                  keyExtractor={(_, idx) => `${tab}-page-${idx}`}
+                  horizontal
+                  pagingEnabled
+                  showsHorizontalScrollIndicator={false}
+                  renderItem={({ item: pageItems }) => (
+                    <View style={styles.grid}>
+                      {pageItems.map((food, idx) => (
+                        <FoodItem
+                          key={`${food.name}-${idx}`}
+                          name={food.name}
+                          shelfLife={food.shelfLife}
+                          image={food.image}
+                        />
+                      ))}
+                    </View>
+                  )}
+                  contentContainerStyle={{ paddingHorizontal: 12 }}
+                />
+              </View>
             );
           })}
-        </View>
+        </Animated.ScrollView>
+
+        {/* Add Food Item Button */}
+        <Link href="/newItem" asChild>
+          <TouchableOpacity style={styles.addButton} activeOpacity={0.8}>
+            <Text style={styles.addButtonText}>+ Add Food Item</Text>
+          </TouchableOpacity>
+        </Link>
       </View>
-
-      {/* Scrollable Pages */}
-      <Animated.ScrollView
-        ref={scrollRef}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onScroll={onScroll}
-        scrollEventThrottle={16}
-        contentContainerStyle={{ paddingTop: 160, paddingBottom: 100 }}
-      >
-        {TABS.map((tab) => {
-          const pages = getPages(foodData[tab]);
-          return (
-            <View key={tab} style={styles.page}>
-              <FlatList
-                data={pages}
-                keyExtractor={(_, idx) => `${tab}-page-${idx}`}
-                horizontal
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                renderItem={({ item: pageItems }) => (
-                  <View style={styles.grid}>
-                    {pageItems.map((food, idx) => (
-                      <FoodItem
-                        key={`${food.name}-${idx}`}
-                        name={food.name}
-                        shelfLife={food.shelfLife}
-                        image={food.image}
-                      />
-                    ))}
-                  </View>
-                )}
-                contentContainerStyle={{ paddingHorizontal: 12 }}
-              />
-            </View>
-          );
-        })}
-      </Animated.ScrollView>
-
-      {/* Add Food Item Button */}
-      <Link href="/newItem" asChild>
-        <TouchableOpacity style={styles.addButton} activeOpacity={0.8}>
-          <Text style={styles.addButtonText}>+ Add Food Item</Text>
-        </TouchableOpacity>
-      </Link>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
+  container: { flex: 1, backgroundColor: "transparent" }, // keep transparent so background shows
   header: {
     position: "absolute",
     top: 40,
@@ -198,7 +196,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     paddingVertical: 8,
     paddingHorizontal: 4,
-    backgroundColor: "#f0f0f0", // light grey
+    backgroundColor: "#f0f0f0",
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 6,
@@ -239,8 +237,4 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   addButtonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "700",
-  },
-});
+    color: "#fff",}})

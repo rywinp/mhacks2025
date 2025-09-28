@@ -187,9 +187,6 @@ def analyze_food_image():
     data = json.loads(response.text)
 
     for food in data:
-
-        print(food)
-
         image_response = client.models.generate_images(
             model='imagen-4.0-generate-001',
             prompt='Stock photo of a ' + food["food_name"] + ' with a white background',
@@ -221,7 +218,7 @@ def analyze_food_image():
             # Construct the public URL (assuming your bucket has public access, or you use `get_public_url`)
         except Exception as e:
             print(f"An error occurred during Supabase upload: {e}")
-
+    
     return jsonify({
             'analysis_result': response.text,
             'status': 'Success',
@@ -230,7 +227,7 @@ def analyze_food_image():
 
 
 # To test image upload
-"""
+
 @app.route('/index.html')
 def index_html():
     return '''
@@ -384,11 +381,9 @@ def index_html():
 </body>
 </html>
 '''
-"""
+
 
 # Run the application
 # This block ensures the server only runs when the script is executed directly
 if __name__ == '__main__':
-    # debug=True allows for automatic reloading on code changes
-    # and provides a debugger in the browser
     app.run(debug=True)
